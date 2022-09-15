@@ -1,0 +1,58 @@
+def to_cumulative(stream: list):
+  #Assume no error handling is needed
+  def taketicker(array):
+      return(array[1])
+  stream.sort()
+  al=[x.split(",") for x in stream]
+  al=[x[:-1]+[int(x[2])*float(x[3])] for x in al]
+  al.sort(key=taketicker)
+  cal=[al[0][:-1]+[str(al[0][-1])]]
+  for i in range(1,len(al)):
+      if al[i][1]==al[i-1][1]:
+          cal.append(al[i][:-1]+[str(al[i][-1]+float(cal[i-1][-1]))])
+      else:
+          cal.append(al[i][:-1]+[str(al[i][-1])])
+  cal.sort()
+  ccal=[cal[0]]
+  for i in range(1,len(cal)):
+      if cal[i][0]==cal[i-1][0]:
+          ccal[-1]+=cal[i][1:]
+      else:
+          ccal.append(cal[i])
+  ccal=[",".join(x) for x in ccal]
+  return(ccal)
+  raise Exception
+
+def to_cumulative_delayed(stream: list, quantity_block: int):
+  #Assume no error handling is needed
+  #Assume that if more than one "multiple of quantity block" appears within a timestamp,
+  #only the first one will be reported
+  def taketicker(array):
+      return(array[1])
+  def cala(a):
+      ln=a[4]-a[2]
+      nn=(1+ln//quantity_block)*quantity_block
+      if nn>a[4]:
+          return([])
+      p=a[5]-(a[4]-nn)*a[3]
+      return(a[:2]+[str(nn),str(p)])
+  stream.sort()
+  al=[x.split(",") for x in stream]
+  al=[x[:2]+[int(x[2])]+[float(x[3])] for x in al]
+  al.sort(key=taketicker)
+  cal=[al[0]+[al[0][2]]+[al[0][2]*al[0][3]]]
+  for i in range(1,len(al)):
+      if al[i][1]==al[i-1][1]:
+          cal.append(al[i]+[al[i][2]+cal[-1][-2]]+[cal[-1][-1]+al[i][2]*al[i][3]])
+      else:
+          cal.append(al[i]+[al[i][2]]+[al[i][2]*al[i][3]])
+  pcal=[cala(x) for x in cal if cala(x)!=[]]
+  pcal.sort()
+  cpcal=[pcal[0]]
+  for i in range(1,len(pcal)):
+      if pcal[i][0]==pcal[i-1][0]:
+          cpcal[-1]+=pcal[i][1:]
+      else:
+          cpcal.append(pcal[i])
+  cpcal=[",".join(x) for x in cpcal]
+  return(cpcal)
